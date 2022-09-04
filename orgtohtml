@@ -1,0 +1,40 @@
+#!/usr/bin/env perl
+# Convert org from STDIN to html.
+
+# orgtohtml — simple org-to-HTML converter for use with Mutt
+#
+#   Configuration:
+#   muttrc:
+#     set send_multipart_alternative=yes # or ask, ask-no or ask-yes, no to disable
+#     set send_multipart_alternative_filter=/path/to/orgtohtml
+
+# Requirements:
+#   - emacs
+#   Emacs should be running and the server started
+
+# Copyright © 2022 W. Luis Mochán <mochan@fis.unam.mx>
+# Released under the GPL-3.0 licence.
+#
+
+use v5.12;
+use warnings;
+use strict;
+use File::Temp qw(tempfile);
+use File::Basename;
+my ($org_fh, $org_fn)=tempfile(TEMPLATE=>'remXXXX', suffix=>'.org', DIR=>$ENV{HOME});
+my ($name, $dir, $suffix)=fileparse($org_fn, '.org');
+my $html_fn=$dir . $name . '.html';
+say $org_fh "#+OPTIONS: toc:nil";
+my $signature=0;
+while(<>){
+    print $org_fh $_;
+    $signature=1, say $org_fh "#+begin_example" if not $signature and /^-- $/;
+}
+say $org_fh "#+end_example" if $signature;
+close($org_fh);
+my $command=qq(emacsclient -e '(progn (find-file \"$org_fn\") (org-html-export-to-html) (kill-buffer))' >/dev/null);
+system($command)==0 or die "Couldn't open emacsclient";
+open my $html_fh, "<", $html_fn or die "Couldn't open $html_fn";
+say "text/html\n";
+while(<$html_fh>){print;}
+unlink($org_fn, $html_fn) or die "Unlink failed";

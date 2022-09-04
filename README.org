@@ -1,0 +1,47 @@
+* orgtohtml
+
+~orgtohtml~ simple org-to-HTML converter for use with ~mutt~
+** Configuration:
+   In your ~muttrc~ file add the lines
+#+begin_example
+   set send_multipart_alternative=yes # or ask, ask-no or ask-yes, no to disable
+   set send_multipart_alternative_filter=/path/to/orgtohtml
+#+end_example
+** Requirements:
+   You must have the ~emacs~ text editor.
+   The editor must be running with the emacsclient server started.
+   To that end you could add to your ~.emacs~ file the lines
+   #+begin_example
+   (load "server")
+   (server-start)
+   #+end_example
+   or, to be safe if you might happen to run several instances of
+   ~emacs~,
+   #+begin_example
+   (load "server")
+   (unless (sever-running-p) (server-start))
+   #+end_example
+   and start ~emacs~ as usual, maybe from the applications menu or
+   from the command line.
+
+   You should have a running ~Perl~ (>=5.12) and the packages
+   ~File::Temp~ and ~File::Basename~ installed.
+
+** How it works
+   When you send a message with ~mutt~ and the variable
+   ~send_multipart_alternative~ has the value ~yes~, or if it has the
+   value ~ask~, ~ask-no~ or ~ask-yes~ and you confirm, the message is
+   send to the command defined in the variable
+   ~send_multipart_alternative_filter~, presumably, this script. This
+   script interprets the message as an org file, adds a couple of
+   extra lines, for example, around the signature, send the resulting
+   file to emacs to convert it to html, adds a couple of lines to the
+   resulting file and sends it to standard out, from which ~mutt~
+   takes it and produces a mime multipart alternative message. The
+   original org message is sent as the text part and the processed
+   file is sent as a ~text/html~ part. The code could be easily
+   modified to use ~pandoc~ instead of ~emacs~.
+** Copyright
+   © 2022 W. Luis Mochán ~<mochan@fis.unam.mx>~
+** Licence
+   Released under the GPL-3.0 licence.
