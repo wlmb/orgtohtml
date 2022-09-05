@@ -27,6 +27,7 @@ my $html_fn=$dir . $name . '.html';
 say $org_fh "#+OPTIONS: toc:nil";
 my $signature=0;
 while(<>){
+    print $org_fh ": " if m/^>/;
     print $org_fh $_;
     $signature=1, say $org_fh "#+begin_example" if not $signature and /^-- $/;
 }
